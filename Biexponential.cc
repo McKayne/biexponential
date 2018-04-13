@@ -7,6 +7,99 @@
 
 using namespace std;
 
+int findIndex(double xy, double startFrom, double h) {
+    for (int i = 1;; i++) {
+        if (xy - startFrom <= i * h) {
+            return i - 1;
+        }
+    }
+    return -1;
+}
+
+double findAngle(double x, double y) {
+    if (y == 0) {
+        return 0;
+    } else if (x == 0) {
+        return 90;
+    } else if (x == y) {
+        return 45;
+    } else {
+        return atan(y / x) * (180 / M_PI);
+    }
+}
+
+double findStep(double phi, double hx, double hy) {
+    //cout << "c : " << cos(30 * M_PI / 180) << endl;
+    //TODO improve
+    double eta = hx / cos(phi * M_PI / 180);
+    
+    if (phi > 45) {
+        return hy / sin(phi * M_PI / 180);
+    }
+    
+    return eta;
+}
+
+double l(double value1, double value2, double value3, double phi) {
+    if (phi == 0) {
+        return value1;
+    } else if (phi == 45) {
+        return value2;
+    } else if (phi == 90) {
+        return value3;
+    } else if (phi < 45) {
+        return value1 + (value2 - value1) / 45 * phi;
+    } else {
+        return value2 + (value3 - value2) / 45 * (phi - 45);
+    }
+}
+
+double l2(double value1, double value2, double phi) {
+    return value1 + (value2 - value1) / 90 * phi;
+}
+
+double valueAt(Exponential** ex, Exponential** ey, double x, double y, const double xStartFrom, const double yStartFrom, const double hx, const double hy) {
+    int indexX = findIndex(x, xStartFrom, hx), indexY = findIndex(y, yStartFrom, hy);
+    
+    Exponential* ex1 = ex[indexY];
+    Exponential* ex2 = ex[indexY + 1];
+    Exponential* ey1 = ey[indexX];
+    Exponential* ey2 = ey[indexX + 1];
+    
+    double currentX = x - (xStartFrom + indexX * hx), currentY = y - (yStartFrom + indexY * hy);
+    cout << "CX = " << currentX << "; " << currentY << endl;
+    
+    double r = sqrt(pow(currentX, 2) + pow(currentY, 2));
+    cout << "r = " << r << endl;
+    
+    double phi = findAngle(currentX, currentY);
+    double hPhi = findStep(phi, hx, hy);
+    
+    double a = (l2(ex1->getTau(indexX), ey1->getTau(indexY), phi) * sinh(hPhi - r) + l2(ex1->getTau(indexX + 1), ey1->getTau(indexY + 1), phi) * sinh(r)) / sinh(hPhi);
+    
+    double b = (ex1->getF(indexX) - l2(ex1->getTau(indexX), ey1->getTau(indexY), phi)) * (hPhi - r) / hPhi;
+    
+    double c = (l(ex1->getF(indexX + 1), ex2->getF(indexX + 1), ex2->getF(indexX), phi) - l2(ex1->getTau(indexX + 1), ey1->getTau(indexY + 1), phi)) * r / hPhi;
+    
+    return a + b + c;
+    return 0;
+}
+
+Matrix getOctaveMatrix(Exponential** ex, Exponential** ey, const double xStartFrom, const double yStartFrom, const int n, const int k, const int plotX, const int plotY, const double hx, const double hy, const double plotHx, const double plotHy) {
+    Matrix v(plotY, plotX, 0.0);
+    
+    for (int i = 0; i < plotY; i++) {
+        for (int j = 0; j < plotX; j++) {
+            double x = xStartFrom + j * plotHx;
+            double y = yStartFrom + i * plotHy;
+            
+            v(i, j) = valueAt(ex, ey, x, y, xStartFrom, yStartFrom, hx, hy);
+        }
+    }
+
+    return v;
+}
+
 /*Matrix getOctaveMatrix(Exponential e, const double xStartFrom, const int n, const int k, const int plotX, const int plotY, const double plotHx) {
 	Matrix v(plotY, plotX);
 	for (int i = 0; i < plotY; i++) {
@@ -18,7 +111,7 @@ using namespace std;
 	return v;
 }*/
 
-Matrix getOctaveMatrix(Exponential** ex, Exponential** ey, const double xStartFrom, const double yStartFrom, const int n, const int k, const int plotX, const int plotY, const double plotHx, const double plotHy) {
+/*Matrix getOctaveMatrix(Exponential** ex, Exponential** ey, const double xStartFrom, const double yStartFrom, const int n, const int k, const int plotX, const int plotY, const double plotHx, const double plotHy) {
     Matrix v(plotY, plotX, 0.0);
     
     for (int i = 0; i <= k; i++) {
@@ -38,7 +131,7 @@ Matrix getOctaveMatrix(Exponential** ex, Exponential** ey, const double xStartFr
     }
     
     return v;
-}
+}*/
 
 DEFUN_DLD(Biexponential, args, nargout, "") {
 	Matrix u = args(0).matrix_value();
@@ -56,6 +149,10 @@ DEFUN_DLD(Biexponential, args, nargout, "") {
     
     const double xRange = xEndAt - xStartFrom;
     const double yRange = yEndAt - yStartFrom;
+    
+    const double hx = xRange / n;
+    const double hy = yRange / k;
+    
     const double plotHx = xRange / plotX;
     const double plotHy = yRange / plotY;
 
@@ -71,6 +168,32 @@ DEFUN_DLD(Biexponential, args, nargout, "") {
     }
     
     //Exponential e(uNth, xStartFrom, xEndAt, n, plotX);
-	Matrix v = getOctaveMatrix(ex, ey, xStartFrom, yStartFrom, n, k, plotX, plotY, plotHx, plotHy);
+	Matrix v = getOctaveMatrix(ex, ey, xStartFrom, yStartFrom, n, k, plotX, plotY, hx, hy, plotHx, plotHy);
+
+    cout << "A: " << findAngle(1, 0) << "; " << findStep(findAngle(1, 0), hx, hy) << endl;
+    cout << "A: " << findAngle(1, 0.2) << "; " << findStep(findAngle(1, 0.2), hx, hy) << endl;
+    cout << "A: " << findAngle(1, 0.4) << "; " << findStep(findAngle(1, 0.4), hx, hy) << endl;
+    cout << "A: " << findAngle(1, 0.6) << "; " << findStep(findAngle(1, 0.6), hx, hy) << endl;
+    cout << "A: " << findAngle(1, 0.8) << "; " << findStep(findAngle(1, 0.8), hx, hy) << endl;
+    cout << "A: " << findAngle(1, 1) << "; " << findStep(findAngle(1, 1), hx, hy) << endl;
+    cout << "A: " << findAngle(1, 1.2) << "; " << findStep(findAngle(1, 1.2), hx, hy) << endl;
+    cout << "A: " << findAngle(1, 1.5) << "; " << findStep(findAngle(1, 1.5), hx, hy) << endl;
+    cout << "A: " << findAngle(0.2, 1.9) << "; " << findStep(findAngle(0.2, 1.9), hx, hy) << endl;
+    
+    valueAt(ex, ey, -5, 1, xStartFrom, yStartFrom, hx, hy);
+    valueAt(ex, ey, -4, 1, xStartFrom, yStartFrom, hx, hy);
+    valueAt(ex, ey, -3, 1, xStartFrom, yStartFrom, hx, hy);
+    valueAt(ex, ey, -2, 1, xStartFrom, yStartFrom, hx, hy);
+    valueAt(ex, ey, -1, 1, xStartFrom, yStartFrom, hx, hy);
+    valueAt(ex, ey, 0, 1, xStartFrom, yStartFrom, hx, hy);
+    valueAt(ex, ey, 1, 1, xStartFrom, yStartFrom, hx, hy);
+    valueAt(ex, ey, 2, 1, xStartFrom, yStartFrom, hx, hy);
+    valueAt(ex, ey, 3, 1, xStartFrom, yStartFrom, hx, hy);
+    
+    cout << "R: " << l(1, 2, 3, 0) << endl;
+    cout << "R: " << l(1, 2, 3, 30) << endl;
+    cout << "R: " << l(1, 2, 3, 45) << endl;
+    cout << "R: " << l(1, 2, 3, 75) << endl;
+    cout << "R: " << l(1, 2, 3, 90) << endl;
 	return octave_value(v);
 }

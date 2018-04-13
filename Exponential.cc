@@ -113,17 +113,8 @@ void Exponential::initTau() {
     cout << tau[4] << endl;
 }
 
-int Exponential::getIndex(double x) {
-    for (int i = 1;; i++) {
-        if (x - startFrom <= i * h) {
-            return i - 1;
-        }
-    }
-    return -1;
-}
-
 double Exponential::valueAt(double x) {
-    int i = getIndex(x);
+    int i = findIndex(x, startFrom, h);
     cout << x << "\t" << i << endl;
     
     double prevX = startFrom + i * h;
@@ -131,6 +122,14 @@ double Exponential::valueAt(double x) {
     cout << ">> " << prevX << endl;
     
     return (tau[i] * sinh(nextX - x) + tau[i + 1] * sinh(x - prevX)) / s[i] + (f(i) - tau[i]) * (nextX - x) / h + (f(i + 1) - tau[i + 1]) * (x - prevX) / h;
+}
+
+double Exponential::getTau(int i) {
+    return tau[i];
+}
+
+double Exponential::getF(int i) {
+    return f(i);
 }
 
 Matrix getOctaveMatrix(Exponential e, const double startFrom, const int plotX, const double plotHx) {

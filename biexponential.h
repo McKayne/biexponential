@@ -52,12 +52,14 @@ private:
     void initD();
     void initTau();
     
-    int getIndex(double x);
-    
 public:
     
     Exponential(Matrix uNth, const double startFrom, const int endAt, const int n, const double plotHx);
     double valueAt(double x);
+    double getTau(int i);
+    double getF(int i);
 };
+
+int findIndex(double xy, double startFrom, double h);
 
 #endif /* biexponential_h */

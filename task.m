@@ -82,8 +82,8 @@ function plot_grid(v)
 	ylabel 'T-axis';
 	zlabel 'U-axis';
 	title ('U(x, t)');
-    print('/Users/johndoe/Documents/eps/homebrew/my/biexponential/exp.eps', '-color', '-S800, 600');
-	%pause;
+    %print('/Users/johndoe/Documents/eps/homebrew/my/biexponential/exp.eps', '-color', '-S800, 600');
+	pause;
 endfunction
 
 function plot_spline(u, vNth)
