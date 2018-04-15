@@ -8,7 +8,7 @@ global y_range = y_end_at - y_start_from;
 
 global n = 5;
 global k = 5;
-global density = 100;
+global density = 10;
 global plot_x = density + 1;
 global plot_y = density + 1;
 
@@ -26,6 +26,9 @@ endfunction
 function interpolate_and_plot_grid(u, density)
 
 	global x_start_from x_end_at x_range y_start_from y_end_at y_range plot_x plot_y n k hx ht plot_hx plot_ht;
+
+%n = 10;
+%k = 10;
 
 	disp(x_range);
 	disp(y_range);
@@ -48,7 +51,8 @@ function interpolate_and_plot_grid(u, density)
 	endfor
 
 	figure;
-	surf(meshX, meshY, meshZ);
+	%surf(meshX, meshY, meshZ);
+mesh(meshX, meshY, meshZ);
  	xlabel 'X-axis';
 	ylabel 'T-axis';
 	zlabel 'U-axis';
@@ -82,7 +86,7 @@ function plot_grid(v)
 	ylabel 'T-axis';
 	zlabel 'U-axis';
 	title ('U(x, t)');
-    %print('/Users/johndoe/Documents/eps/homebrew/my/biexponential/exp.eps', '-color', '-S800, 600');
+    %print('/Users/johndoe/Documents/eps/homebrew/my/biexponential/end2.eps', '-color', '-S800, 600');
 	pause;
 endfunction
 
@@ -97,6 +101,12 @@ function plot_spline(u, vNth)
 	ylabel 'W(t)';
 	title 'W(t)';
 	pause;
+endfunction
+
+function wt = smooth(wt, n)
+for i = 2 : n
+wt(i) = (wt(i - 1) + 2 * wt(i) + wt(i + 1)) / 4;
+endfor
 endfunction
 
 u = zeros(k + 1, n + 1);
@@ -128,12 +138,37 @@ for i = 1 : k + 1
         current_y = y_start_from + (i - 1) * ht;
 
         u(i, j) = cos(current_x) * cos(current_y);
+        u(i, j) = 1 / (1 + power(current_x, 2) + power(current_y, 2));
     endfor
 endfor
+
+%u = zeros(density + 1, density + 1);
+%k = density;
+%n = density;
+
+%hx = x_range / n;
+%ht = y_range / k;
+%interpolate_and_plot_grid(u, 100);
 
 v = Biexponential(u, x_start_from, x_end_at, y_start_from, y_end_at, n, k, plot_x, plot_y);
 %disp(v);
 %plot_spline(u, v);
 %disp(v(1 : 10));
-%plot_grid(u);
-plot_grid(v);
+
+%plot_grid(v);
+for i = 1 : density + 1
+v(i, :) = smooth(v(i, :), density);
+endfor
+for i = 1 : density + 1
+v(i, :) = smooth(v(i, :), density);
+endfor
+
+k = density;
+n = density;
+hx = x_range / n;
+ht = y_range / k;
+plot_x = 50 + 1;
+plot_y = 50 + 1;
+plot_hx = x_range / (plot_x - 1);
+plot_ht = y_range / (plot_y - 1);
+interpolate_and_plot_grid(v, 50);

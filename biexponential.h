@@ -61,5 +61,6 @@ public:
 };
 
 int findIndex(double xy, double startFrom, double h);
+int findNumberOfBlocks(int indexX, int indexY);
 
 #endif /* biexponential_h */
