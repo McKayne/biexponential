@@ -10,7 +10,7 @@ global y_range = y_end_at - y_start_from;
 
 global n = 5;
 global k = 5;
-global density = 100;
+global density = 10;
 global plot_x = density + 1;
 global plot_y = density + 1;
 
@@ -34,7 +34,7 @@ function task2(density)
         endfor
     endfor
 
-    v = Biexponential(u, x_start_from, x_end_at, y_start_from, y_end_at, n, k, plot_x, plot_y);
+    v = Biexponential(u, x_start_from, x_end_at, y_start_from, y_end_at, n, k, plot_x - 1, plot_y - 1);
 %exit;
     %for i = 1 : density + 1
     %    v(i, :) = smooth(v(i, :), density);

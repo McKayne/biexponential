@@ -66,6 +66,35 @@ double startTau(Exponential** ex, Exponential** ey, const int n, const int k, co
         return ex1->getTau(indexX);
     } else if (phi == 90) {
         return ey1->getTau(indexY);
+    } else if (phi == 45) {
+        int blocks = findNumberOfBlocks(n, k, indexX, indexY);
+        //double hPhi = sqrt(8.0);
+        double hPhi = sqrt(pow(hx, 2) + pow(hy, 2));
+        
+        int currentIndexX = indexX;
+        int currentIndexY = indexY;
+        int diagNth = 0;
+        while (true) {
+            if (currentIndexX > 0 && currentIndexY > 0) {
+                currentIndexX--;
+                currentIndexY--;
+                diagNth++;
+                //n++;
+            } else {
+                break;
+            }
+        }
+        Matrix diagSpline(1, blocks + 1);
+        diagSpline(0) = ex[currentIndexY]->getF(currentIndexX);
+        for (int i = 1; i <= blocks; i++) {
+            diagSpline(i) = ex[currentIndexY + 1]->getF(currentIndexX + 1);
+            
+            currentIndexX++;
+            currentIndexY++;
+        }
+        Exponential e(diagSpline, 0, blocks * hPhi, blocks, -1);
+        
+        return e.getTau(diagNth);
     } else {
         int nth;
         cout << endl << "Now processing " << indexX << "; " << indexY << "; " << phi << endl << endl;
@@ -74,57 +103,6 @@ double startTau(Exponential** ex, Exponential** ey, const int n, const int k, co
     
         return e.getTau(nth);
     }
-    
-    if (true) {
-    
-        
-    
-    int blocks = findNumberOfBlocks(n, k, indexX, indexY);
-    //double hPhi = sqrt(8.0);
-    double hPhi = sqrt(pow(hx, 2) + pow(hy, 2));
-    
-    int currentIndexX = indexX;
-    int currentIndexY = indexY;
-    int diagNth = 0;
-    while (true) {
-        if (currentIndexX > 0 && currentIndexY > 0) {
-            currentIndexX--;
-            currentIndexY--;
-            diagNth++;
-            //n++;
-        } else {
-            break;
-        }
-    }
-    Matrix diagSpline(1, blocks + 1);
-    diagSpline(0) = ex[currentIndexY]->getF(currentIndexX);
-    for (int i = 1; i <= blocks; i++) {
-        diagSpline(i) = ex[currentIndexY + 1]->getF(currentIndexX + 1);
-        
-        currentIndexX++;
-        currentIndexY++;
-    }
-    Exponential e(diagSpline, 0, blocks * hPhi, blocks, -1);
-      
-        Matrix tau(1, 3);
-        tau(0) = ex1->getTau(indexX);
-        tau(1) = e.getTau(diagNth);
-        tau(2) = ey1->getTau(indexY);
-        
-        Exponential eTau(tau, 0, 90, 2, -1);
-        
-        if (phi == 0) {
-            return ex1->getTau(indexX);
-        } else if (phi == 90) {
-            return ey1->getTau(indexY);
-        } else if (phi == 45) {
-            return e.getTau(diagNth);
-        }
-        
-        return eTau.valueAt(phi);
-        
-        return e.getTau(diagNth);
-     }
     
     /*Matrix tau(1, 3);
     tau(0) = ex1->getTau(indexX);
@@ -157,6 +135,35 @@ double endTau(Exponential** ex, Exponential**ey, const int n, const int k, const
     
     if (phi == 0) {
         return ex1->getTau(indexX + 1);
+    } else if (phi == 45) {
+        int blocks = findNumberOfBlocks(n, k, indexX, indexY);
+        //double hPhi = sqrt(8.0);
+        double hPhi = sqrt(pow(hx, 2) + pow(hy, 2));
+        
+        int currentIndexX = indexX;
+        int currentIndexY = indexY;
+        int diagNth = 0;
+        while (true) {
+            if (currentIndexX > 0 && currentIndexY > 0) {
+                currentIndexX--;
+                currentIndexY--;
+                diagNth++;
+                //n++;
+            } else {
+                break;
+            }
+        }
+        Matrix diagSpline(1, blocks + 1);
+        diagSpline(0) = ex[currentIndexY]->getF(currentIndexX);
+        for (int i = 1; i <= blocks; i++) {
+            diagSpline(i) = ex[currentIndexY + 1]->getF(currentIndexX + 1);
+            
+            currentIndexX++;
+            currentIndexY++;
+        }
+        Exponential e(diagSpline, 0, blocks * hPhi, blocks, -1);
+        
+        return e.getTau(diagNth + 1);
     } else if (phi == 90) {
         return ey1->getTau(indexY + 1);
     } else {
@@ -167,43 +174,6 @@ double endTau(Exponential** ex, Exponential**ey, const int n, const int k, const
         
         return e.getTau(nth + 1);
     }
-    
-    
-    int blocks = findNumberOfBlocks(n, k, indexX, indexY);
-    //double hPhi = sqrt(8.0);
-    double hPhi = sqrt(pow(hx, 2) + pow(hy, 2));
-    
-    int currentIndexX = indexX;
-    int currentIndexY = indexY;
-    int diagNth = 0;
-    while (true) {
-        if (currentIndexX > 0 && currentIndexY > 0) {
-            currentIndexX--;
-            currentIndexY--;
-            diagNth++;
-            //n++;
-        } else {
-            break;
-        }
-    }
-    Matrix diagSpline(1, blocks + 1);
-    diagSpline(0) = ex[currentIndexY]->getF(currentIndexX);
-    for (int i = 1; i <= blocks; i++) {
-        diagSpline(i) = ex[currentIndexY + 1]->getF(currentIndexX + 1);
-        
-        currentIndexX++;
-        currentIndexY++;
-    }
-    Exponential e(diagSpline, 0, blocks * hPhi, blocks, -1);
-    
-    Matrix tau(1, 3);
-    tau(0) = ex1->getTau(indexX + 1);
-    tau(1) = e.getTau(diagNth + 1);
-    tau(2) = ey1->getTau(indexY + 1);
-    
-    Exponential eTau(tau, 0, 90, 2, -1);
-    
-    return eTau.valueAt(phi);
 }
 
 int findNumberOfBlocks(const int n, const int k, int indexX, int indexY) {
@@ -265,14 +235,27 @@ double valueAt(Exponential** ex, Exponential** ey, double x, double y, const dou
 }
 
 Matrix getOctaveMatrix(Exponential** ex, Exponential** ey, const double xStartFrom, const double yStartFrom, const int n, const int k, const int plotX, const int plotY, const double hx, const double hy, const double plotHx, const double plotHy) {
-    Matrix v(plotY, plotX, 0.0);
+    Matrix v(plotY + 1, plotX + 1, 0.0);
     
-    for (int i = 0; i < plotY; i++) {
-        for (int j = 0; j < plotX; j++) {
+    for (int i = 0; i <= plotY; i++) {
+        for (int j = 0; j <= plotX; j++) {
             double x = xStartFrom + j * plotHx;
             double y = yStartFrom + i * plotHy;
             
             v(i, j) = valueAt(ex, ey, x, y, xStartFrom, yStartFrom, n, k, hx, hy);
+            if (isnan(v(i, j))) {
+                cout << "NaN at x = " << (double) x << ", y = " << y << endl;
+            }
+            //cout << "++++ " << v(i, j) << endl;
+        }
+    }
+    for (int i = 0; i < plotY; i++) {
+        for (int j = 20; j < plotX; j++) {
+            double x = xStartFrom + j * plotHx;
+            double y = yStartFrom + i * plotHy;
+            
+            cout << "(" << x << "; " << y << ")" << endl;
+            cout << "Plot " << plotHx << endl;
         }
     }
     
@@ -480,7 +463,7 @@ double* toNextBlock(Exponential** ex, Exponential** ey, double xStartFrom, doubl
     return values;
 }
 
-Exponential2 buildDiagSpline(const int indexX, const int indexY, const double phi, Exponential** ex, Exponential** ey, const double xStartFrom, const double yStartFrom, const double hx, const double hy, int* nth) {
+Exponential2 buildDiagSpline( int indexX,  int indexY, const double phi, Exponential** ex, Exponential** ey, const double xStartFrom, const double yStartFrom, const double hx, const double hy, int* nth) {
     double pointX, pointY;
     
     int totalValues = 0;
@@ -491,6 +474,17 @@ Exponential2 buildDiagSpline(const int indexX, const int indexY, const double ph
     
     int newX = findIndex(pointX, xStartFrom, hx), newY = findIndex(pointY, yStartFrom, hy);
     double startX = pointX - (newX * hx + xStartFrom), startY = pointY - (newY * hy + yStartFrom);
+    
+    //TODO dirty hack
+    /*if (startX == hx) {
+        newX++;
+        startX = 0;
+    }
+    if (startY == hy) {
+        newY++;
+        startY = 0;
+    }*/
+    
     cout << "Index = " << newX << "; " << newY << endl;
     cout << "Start = " << startX << "; " << startY << endl;
     
@@ -508,6 +502,14 @@ Exponential2 buildDiagSpline(const int indexX, const int indexY, const double ph
     
     return Exponential2(values, h, 0, totalValues - 1);
 }
+
+/*int newIndexAt(double val) {
+    for (int i = 1; i < 5; i++) {
+        if (i * 2 > val + 5) {
+            return i - 1;
+        }
+    }
+}*/
 
 DEFUN_DLD(Biexponential, args, nargout, "") {
 	Matrix u = args(0).matrix_value();
@@ -544,7 +546,7 @@ DEFUN_DLD(Biexponential, args, nargout, "") {
     }
     
     //Exponential e(uNth, xStartFrom, xEndAt, n, plotX);
-	Matrix v = getOctaveMatrix(ex, ey, xStartFrom, yStartFrom, n, k, plotX, plotY, hx, hy, plotHx, plotHy);
+    Matrix v = getOctaveMatrix(ex, ey, xStartFrom, yStartFrom, n, k, plotX, plotY, hx, hy, plotHx, plotHy);
 
     /*cout << "A: " << findAngle(1, 0) << "; " << findStep(findAngle(1, 0), hx, hy) << endl;
     cout << "A: " << findAngle(1, 0.2) << "; " << findStep(findAngle(1, 0.2), hx, hy) << endl;
@@ -606,6 +608,7 @@ DEFUN_DLD(Biexponential, args, nargout, "") {
     Exponential2 e = buildDiagSpline(0, 0, 36.8699, ex, ey, xStartFrom, yStartFrom, hx, hy, &nth);
     cout << endl << "Nth = " << nth << endl << endl;
     
+    cout << "Test " << valueAt(ex, ey, 5, -1, xStartFrom, yStartFrom, n, k, hx, hy) << endl << endl;
     
     //toPrevBlock(xStartFrom, yStartFrom, 5, 5, 60, hx, hy, 0, 0);
     //toNextBlock(xStartFrom, yStartFrom, 0, 0, 60, hx, hy, 0, 0);
