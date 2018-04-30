@@ -1,1 +1,1 @@
-mkoctfile Biexponential.cc Exponential.cc Sweep.cc
+mkoctfile Biexponential.cc Exponential.cc Exponential2.cc Sweep.cc
